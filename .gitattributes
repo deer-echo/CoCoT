@@ -1,3 +1,4 @@
 *.json filter=lfs diff=lfs merge=lfs -text
 *.jsonl filter=lfs diff=lfs merge=lfs -text
 dataset_with_GT/GQA/GQA_merged_complex_6plus.json filter=lfs diff=lfs merge=lfs -text
+dataset_with_GT/InfoVQA/InfoVQA_complex_4plus_parallel_fixed.json filter=lfs diff=lfs merge=lfs -text
