@@ -1,0 +1,90 @@
+name: qwen2vl
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  # Python版本 (基于当前工作环境)
+  - python=3.9
+
+  # CUDA和PyTorch (基于当前环境: PyTorch 2.7.1+cu126, CUDA 12.6)
+  # 注意: 根据你的CUDA版本调整pytorch-cuda版本
+  - pytorch>=2.0.0
+  - torchvision>=0.15.0
+  - torchaudio>=2.0.0
+  - pytorch-cuda=12.1  # 或 11.8，根据你的CUDA版本
+  # 如果CUDA 12.6不可用，使用12.1版本的包
+
+  # 基础科学计算
+  - numpy>=1.24.0,<2.0.0  # 兼容性考虑
+  - scipy>=1.10.0
+  - pandas>=2.0.0
+
+  # 图像处理基础库
+  - pillow>=10.0.0
+  - opencv>=4.8.0
+
+  # 系统工具
+  - psutil>=5.9.0
+  - pyyaml>=6.0.0
+
+  # 开发工具 (可选)
+  - jupyter>=1.0.0
+  - ipywidgets>=8.0.0
+  - notebook>=7.0.0
+
+  # 可视化工具 (可选)
+  - matplotlib>=3.7.0
+  - seaborn>=0.12.0
+
+  # pip包管理器
+  - pip>=23.0.0
+
+  # 通过pip安装的包 (基于当前工作环境优化)
+  - pip:
+    # === Transformers生态系统 ===
+    - transformers>=4.45.0        # 当前环境: 4.57.0.dev0
+    - tokenizers>=0.19.0          # 高效分词器
+    - accelerate>=1.0.0           # 当前环境: 1.4.0
+    - datasets>=2.20.0            # 数据集处理
+    - safetensors>=0.4.0          # 安全模型格式
+    - huggingface-hub>=0.20.0     # 模型下载管理
+
+    # === Qwen2-VL专用工具 ===
+    - qwen-vl-utils==0.0.11       # 固定版本，确保兼容性
+
+    # === OCR文字识别 ===
+    - paddleocr==2.7.3            # 当前环境版本
+    - paddlepaddle-gpu>=2.5.0     # 当前环境: 2.5.2
+    # 注意: 如果没有GPU，改为 paddlepaddle>=2.5.0
+
+    # === 数据处理工具 ===
+    - jsonlines>=4.0.0            # JSONL文件处理
+    - tqdm>=4.65.0                # 进度条
+    - regex>=2023.0.0             # 正则表达式增强
+    - ftfy>=6.0.0                 # 文本编码修复
+
+    # === 系统监控 ===
+    - GPUtil>=1.4.0               # GPU监控
+    - py3nvml>=0.2.0              # NVIDIA GPU监控
+
+    # === 网络和下载 ===
+    - requests>=2.28.0            # HTTP请求
+    - urllib3>=1.26.0,<3.0.0      # HTTP客户端
+    - modelscope>=1.10.0          # 国内模型下载
+
+    # === 终端和界面 ===
+    - rich>=13.0.0                # 美化终端输出
+    - click>=8.0.0                # 命令行工具
+    - colorama>=0.4.0             # 跨平台彩色输出
+
+    # === 图像处理增强 ===
+    - imageio>=2.30.0             # 图像读写
+    - scikit-image>=0.20.0        # 图像处理算法
+
+    # === 其他工具 ===
+    - typing-extensions>=4.0.0    # 类型注解
+    - packaging>=20.0             # 包管理
+    - toml>=0.10.0                # 配置文件解析

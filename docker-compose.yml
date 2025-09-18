@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  qwen2vl-datagen:
+    build: .
+    image: qwen2vl-datagen:latest
+    container_name: qwen2vl-container
+    
+    # GPU支持
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    # 环境变量
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0,1,2,3
+      - PYTHONUNBUFFERED=1
+    
+    # 卷挂载
+    volumes:
+      - .:/workspace
+      - ./models:/workspace/models  # 模型文件目录
+      - ./data:/workspace/data      # 数据文件目录
+      - ./output:/workspace/output  # 输出目录
+    
+    # 端口映射（如果需要Jupyter等服务）
+    ports:
+      - "8888:8888"  # Jupyter Lab
+      - "6006:6006"  # TensorBoard
+    
+    # 工作目录
+    working_dir: /workspace
+    
+    # 交互式终端
+    stdin_open: true
+    tty: true
+    
+    # 启动命令
+    command: >
+      bash -c "
+        source activate qwen2vl &&
+        python check_environment.py &&
+        echo '🚀 Qwen2-VL数据生成系统已就绪!' &&
+        echo '运行 python quick_start.py 开始生成数据' &&
+        /bin/bash
+      "
+
+# 使用方法:
+# 1. 构建并启动: docker-compose up --build
+# 2. 进入容器: docker-compose exec qwen2vl-datagen bash
+# 3. 停止服务: docker-compose down
