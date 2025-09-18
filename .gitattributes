@@ -4,3 +4,4 @@ dataset_with_GT/GQA/GQA_merged_complex_6plus.json filter=lfs diff=lfs merge=lfs 
 dataset_with_GT/InfoVQA/InfoVQA_complex_4plus_parallel_fixed.json filter=lfs diff=lfs merge=lfs -text
 dataset_with_GT/InfoVQA/InfoVQA_complex_4plus_parallel.json filter=lfs diff=lfs merge=lfs -text
 dataset_with_GT/TextVQA/TextVQA_complex_3plus_parallel.json filter=lfs diff=lfs merge=lfs -text
+dataset_with_GT/Visual7W/Visual7W_complex_3plus_parallel.json filter=lfs diff=lfs merge=lfs -text
