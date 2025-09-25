@@ -21,22 +21,22 @@ Generate_Data_Qwen2-VL/
 │   └── Qwen2-VL-7B-Instruct/             # Qwen2-VL模型文件
 ├── 📊 数据集
 │   ├── dataset_with_GT/                   # 原始数据集（带Ground Truth）
-│   │   ├── Docvqa/                       # DocVQA数据集
-│   │   ├── GQA/                          # GQA数据集
-│   │   ├── InfoVQA/                      # InfoVQA数据集
-│   │   ├── TextVQA/                      # TextVQA数据集
-│   │   ├── VQAv2/                        # VQAv2数据集
-│   │   └── Visual7W/                     # Visual7W数据集
+│   │   ├── Docvqa/DocVQA_complex_4plus.json                       # DocVQA数据集
+│   │   ├── GQA/GQA_merged_complex_6plus.json                      # GQA数据集
+│   │   ├── InfoVQA/InfoVQA_complex_4plus_parallel.json            # InfoVQA数据集
+│   │   ├── TextVQA/TextVQA_complex_3plus_parallel.json           # TextVQA数据集
+│   │   ├── VQAv2/VQA_v2_train_merged.json                        # VQAv2数据集
+│   │   └── Visual7W/Visual7W_complex_3plus_parallel.json        # Visual7W数据集
 │   └── playground/                        # 数据存储目录
 │       └── data/                         # 各种中间和最终数据
-│           ├── cot/                      # 图像数据按数据集分类
-│           │   ├── docvqa/              # DocVQA图像
-│           │   ├── gqa/                 # GQA图像
-│           │   ├── textvqa/             # TextVQA图像
-│           │   ├── coco/                # COCO图像(VQAv2)
-│           │   ├── v7w/                 # Visual7W图像
-│           │   └── infographicsvqa/     # InfoVQA图像
-│           └── viscot_363k.json         # Visual-CoT数据集
+│           └── cot/                      # 图像数据按数据集分类
+│              ├── docvqa/ffbf0023_4.png...              # DocVQA图像
+│              ├── gqa/1.jpg...                            # GQA图像
+│              ├── textvqa/0a0bc91825468c45.jpg             # TextVQA图像
+│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO图像(VQAv2)
+│              ├── v7w/v7w_1.jpg...                 # Visual7W图像
+│              └── infographicsvqa/10002.jpeg...    # InfoVQA图像
+│          
 ├── 📦 生成结果
 │   ├── images_bbox/                       # 生成的bbox数据
 │   │   ├── DocVQA_complex_one_agent.json
@@ -76,6 +76,15 @@ Generate_Data_Qwen2-VL/
 - **`reasoning_chains/`**: 生成的推理链数据，包含推理步骤和逻辑关系
 
 ## 🔧 环境配置
+
+### 数据图片下载
+下载对应数据集并配置到playground/data/cot的对应路径下
+- **COCO**: [images](http://images.cocodataset.org/zips/train2014.zip) (82,783 images)
+- **DocVQA**: [homepage](https://www.docvqa.org/datasets/docvqa) (10,196 images)
+- **TextVQA**: [images](https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip) (25,119 images)
+- **Visual7W**: [repo](https://github.com/yukezhu/visual7w-toolkit) (47,300 images)
+- **GQA**: [images](https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip) (148,854 images)
+- **InfographicVQA**: [homepage](https://www.docvqa.org/datasets/infographicvqa) (5,485 images)
 
 ### 🌟 快速环境配置（推荐）
 
