@@ -1,5 +1,5 @@
-CoCoT Data Generation System
-A data generation system for Collaborative Cross-modal Chain-of-Thought (CoCoT) based on Qwen2-VL, designed to produce high-quality training data with dynamic multi-region grounding and relation-aware reasoning chains.
+# CoCoT Data Generation System
+This is a data generation system for Collaborative Cross-modal Chain-of-Thought (CoCoT) based on Qwen2-VL, designed to produce high-quality training data with dynamic multi-region grounding and relation-aware reasoning chains.
 
 🔍 Related Research: This system implements the methodology described in the paper "Watch Wider and Think Deeper: Collaborative Cross-modal Chain-of-Thought for Complex Visual Reasoning", addressing limitations of single-region CoT methods through multi-region collaboration.
 
