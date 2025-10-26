@@ -1,84 +1,87 @@
-# Qwen2-VL 数据生成系统
+CoCoT Data Generation System
+A data generation system for Collaborative Cross-modal Chain-of-Thought (CoCoT) based on Qwen2-VL, designed to produce high-quality training data with dynamic multi-region grounding and relation-aware reasoning chains.
 
-基于 Qwen2-VL 模型的视觉问答数据生成系统，用于生成包含边界框(bbox)和推理链的高质量训练数据。
+🔍 Related Research: This system implements the methodology described in the paper "Watch Wider and Think Deeper: Collaborative Cross-modal Chain-of-Thought for Complex Visual Reasoning", addressing limitations of single-region CoT methods through multi-region collaboration.
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 Generate_Data_Qwen2-VL/
-├── 🔧 核心脚本
-│   ├── generate_bbox_one_agent_qwen.py    # 主要脚本：生成bbox数据
-│   └── generate_relation_cycle.py         # 主要脚本：生成推理链数据
+├── 🔧 Core Scripts
+│   ├── generate_bbox_one_agent_qwen.py    # Main script: generates bbox data
+│   └── generate_relation_cycle.py         # Main script: generates reasoning chain data
 
-├── 📖 文档和配置
-│   ├── README.md                          # 📖 本文档
-│   ├── requirements.txt                   # pip依赖包列表
-│   ├── current_requirements.txt           # 当前环境完整包列表
-│   ├── environment.yml                    # conda环境配置
-│   ├── Dockerfile                         # Docker镜像配置
-│   └── docker-compose.yml                # Docker编排配置
-├── 🤖 模型文件
-│   └── Qwen2-VL-7B-Instruct/             # Qwen2-VL模型文件
-├── 📊 数据集
-│   ├── dataset_with_GT/                   # 原始数据集（带Ground Truth）
-│   │   ├── Docvqa/DocVQA_complex_4plus.json                       # DocVQA数据集
-│   │   ├── GQA/GQA_merged_complex_6plus.json                      # GQA数据集
-│   │   ├── InfoVQA/InfoVQA_complex_4plus_parallel.json            # InfoVQA数据集
-│   │   ├── TextVQA/TextVQA_complex_3plus_parallel.json           # TextVQA数据集
-│   │   ├── VQAv2/VQA_v2_train_merged.json                        # VQAv2数据集
-│   │   └── Visual7W/Visual7W_complex_3plus_parallel.json        # Visual7W数据集
-│   └── playground/                        # 数据存储目录
-│       └── data/                         # 各种中间和最终数据
-│           └── cot/                      # 图像数据按数据集分类
-│              ├── docvqa/ffbf0023_4.png...              # DocVQA图像
-│              ├── gqa/1.jpg...                            # GQA图像
-│              ├── textvqa/0a0bc91825468c45.jpg...             # TextVQA图像
-│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO图像(VQAv2)
-│              ├── v7w/v7w_1.jpg...                 # Visual7W图像
-│              └── infographicsvqa/10002.jpeg...    # InfoVQA图像
+├── 📖 Documentation & Configuration
+│   ├── README.md                          
+│   ├── requirements.txt                   # Pip dependency list
+│   ├── current_requirements.txt           # Current environment complete package list
+│   ├── environment.yml                    # Conda environment configuration
+│   ├── Dockerfile                         # Docker image configuration
+│   └── docker-compose.yml                # Docker orchestration configuration
+
+├── 🤖 Model Files
+│   └── Qwen2-VL-7B-Instruct/             # Qwen2-VL model files
+
+├── 📊 Datasets
+│   ├── dataset_with_GT/                   # Original datasets (with Ground Truth)
+│   │   ├── Docvqa/DocVQA_complex_4plus.json                       # DocVQA dataset
+│   │   ├── GQA/GQA_merged_complex_6plus.json                      # GQA dataset
+│   │   ├── InfoVQA/InfoVQA_complex_4plus_parallel.json            # InfoVQA dataset
+│   │   ├── TextVQA/TextVQA_complex_3plus_parallel.json           # TextVQA dataset
+│   │   ├── VQAv2/VQA_v2_train_merged.json                        # VQAv2 dataset
+│   │   └── Visual7W/Visual7W_complex_3plus_parallel.json        # Visual7W dataset
+│   └── playground/                        # Data storage directory
+│       └── data/                         # Various intermediate and final data
+│           └── cot/                      # Image data categorized by dataset
+│              ├── docvqa/ffbf0023_4.png...              # DocVQA images
+│              ├── gqa/1.jpg...                            # GQA images
+│              ├── textvqa/0a0bc91825468c45.jpg...             # TextVQA images
+│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO images (VQAv2)
+│              ├── v7w/v7w_1.jpg...                 # Visual7W images
+│              └── infographicsvqa/10002.jpeg...    # InfoVQA images
 │          
-├── 📦 生成结果
-│   ├── images_bbox/                       # 生成的bbox数据
+├── 📦 Generated Results
+│   ├── images_bbox/                       # Generated bbox data
 │   │   ├── DocVQA_complex_one_agent.json
 │   │   ├── GQA_complex_one_agent.json
 │   │   ├── InfoVQA_complex_one_agent.json
 │   │   ├── TextVQA_complex_one_agent.json
 │   │   ├── VQAv2_complex_one_agent.json
 │   │   └── Visual7W_complex_one_agent.json
-│   └── reasoning_chains/                  # 生成的推理链数据
+│   └── reasoning_chains/                  # Generated reasoning chain data
 │       ├── DocVQA_complex_reasoning_chains_one_agent.json
 │       ├── GQA_complex_reasoning_chains_one_agent.json
 │       ├── InfoVQA_complex_reasoning_chains_one_agent.json
 │       ├── TextVQA_complex_reasoning_chains_one_agent.json
 │       ├── VQAv2_complex_reasoning_chains_one_agent.json
 │       └── Visual7W_complex_reasoning_chains_one_agent.json
-└── 🗂️ 其他文件
-    ├── __pycache__/                       # Python缓存文件
-    └── *.log                              # 运行日志文件
+└── 🗂️ Other Files
+    ├── __pycache__/                       # Python cache files
+    └── *.log                              # Runtime log files
 ```
 
-## 📋 文件功能说明
+## 📋 File Function Description
 
-### 🔧 核心脚本
-- **`generate_bbox_one_agent_qwen.py`**: 使用Qwen2-VL生成边界框数据，支持4层生成策略
-- **`generate_relation_cycle.py`**: 基于bbox数据构建推理链，支持单步和多步推理
+### 🔧 Core Scripts
+- **`generate_bbox_one_agent_qwen.py`**: Uses Qwen2-VL to generate bounding box data with a 4-layer generation strategy
+- **`generate_relation_cycle.py`**: Builds reasoning chains based on bbox data, supporting single-step and multi-step reasoning
 
-### 📖 配置文件
-- **`requirements.txt`**: 精心整理的pip依赖包列表，包含版本固定
-- **`environment.yml`**: conda环境配置文件，支持一键创建环境
-- **`Dockerfile`**: Docker镜像配置，支持容器化部署
-- **`docker-compose.yml`**: Docker编排配置，简化容器使用
+### 📖 Configuration Files
+- **`requirements.txt`**: Carefully curated pip dependency list with version pinning
+- **`environment.yml`**: Conda environment configuration file for one-click environment creation
+- **`Dockerfile`**: Docker image configuration supporting containerized deployment
+- **`docker-compose.yml`**: Docker orchestration configuration for simplified container usage
 
-### 📊 数据目录
-- **`dataset_with_GT/`**: 原始数据集，包含问题、答案和图像路径
-- **`playground/data/cot/`**: 图像文件，按数据集分类存储
-- **`images_bbox/`**: 生成的bbox数据，包含边界框坐标和描述
-- **`reasoning_chains/`**: 生成的推理链数据，包含推理步骤和逻辑关系
+### 📊 Data Directories
+- **`dataset_with_GT/`**: Original datasets containing questions, answers, and image paths
+- **`playground/data/cot/`**: Image files, categorized and stored by dataset
+- **`images_bbox/`**: Generated bbox data containing bounding box coordinates and descriptions
+- **`reasoning_chains/`**: Generated reasoning chain data containing reasoning steps and logical relationships
 
-## 🔧 环境配置
+## 🔧 Environment Setup
 
-### 数据图片下载
-下载对应数据集并配置到playground/data/cot的对应路径下
+### Image Data Download
+Download corresponding datasets and configure them in the appropriate paths under `playground/data/cot`:
 - **COCO**: [images](http://images.cocodataset.org/zips/train2014.zip) (82,783 images)
 - **DocVQA**: [homepage](https://www.docvqa.org/datasets/docvqa) (10,196 images)
 - **TextVQA**: [images](https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip) (25,119 images)
@@ -86,57 +89,54 @@ Generate_Data_Qwen2-VL/
 - **GQA**: [images](https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip) (148,854 images)
 - **InfographicVQA**: [homepage](https://www.docvqa.org/datasets/infographicvqa) (5,485 images)
 
-### 🌟 快速环境配置（推荐）
+### 🌟 Quick Environment Setup (Recommended)
 
-#### 方法1: 使用conda环境文件（最简单）
+#### Method 1: Using Conda Environment File (Simplest)
 ```bash
-# 1. 克隆或下载项目
+# 1. Clone or download the project
 git clone <repository-url>
 cd Generate_Data_Qwen2-VL
 
-# 2. 创建conda环境（自动安装所有依赖）
+# 2. Create conda environment (automatically installs all dependencies)
 conda env create -f environment.yml
 
-# 3. 激活环境
+# 3. Activate environment
 conda activate qwen2vl
-
 ```
 
-#### 方法2: 手动创建环境（更灵活）
+#### Method 2: Manual Environment Creation (More Flexible)
 ```bash
-# 1. 创建基础环境
+# 1. Create base environment
 conda create -n qwen2vl python=3.9 -y
 conda activate qwen2vl
 
-# 2. 安装PyTorch（根据你的CUDA版本选择）
-# CUDA 12.6 (当前环境)
+# 2. Install PyTorch (choose based on your CUDA version)
+# CUDA 12.6 (current environment)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 
 
-# 3. 安装其他依赖
+# 3. Install other dependencies
 pip install -r requirements.txt
-
 ```
 
+### 📥 Model Download
 
-### 📥 模型下载
+#### 🤖 Qwen2-VL-7B-Instruct Model
 
-#### 🤖 Qwen2-VL-7B-Instruct 模型
-
-**自动下载脚本（推荐）：**
+**Automatic Download Script (Recommended):**
 ```bash
-# 从ModelScope下载（国内用户推荐，速度快）
+# Download from ModelScope (recommended for Chinese users, faster)
 python download_model.py --source modelscope
 
-# 从HuggingFace下载（国外用户）
+# Download from HuggingFace (international users)
 python download_model.py --source huggingface
 
-# 指定下载目录
+# Specify download directory
 python download_model.py --model-dir ./models/Qwen2-VL-7B-Instruct --source modelscope
 ```
 
-**手动下载方法：**
+**Manual Download Methods:**
 ```bash
-# 方法1: ModelScope (国内推荐，约15GB)
+# Method 1: ModelScope (recommended in China, ~15GB)
 pip install modelscope
 python -c "
 from modelscope import snapshot_download
@@ -145,11 +145,11 @@ snapshot_download('qwen/Qwen2-VL-7B-Instruct',
                  cache_dir='./cache')
 "
 
-# 方法2: HuggingFace (需要良好的网络)
+# Method 2: HuggingFace (requires good network connection)
 git lfs install
 git clone https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct
 
-# 方法3: 使用HuggingFace Hub
+# Method 3: Using HuggingFace Hub
 pip install huggingface_hub
 python -c "
 from huggingface_hub import snapshot_download
@@ -158,197 +158,217 @@ snapshot_download('Qwen/Qwen2-VL-7B-Instruct',
 "
 ```
 
-**模型文件结构验证：**
+**Model File Structure Verification:**
 ```bash
-# 检查模型文件完整性
+# Check model file integrity
 ls -la Qwen2-VL-7B-Instruct/
-# 应该包含以下关键文件：
-# - config.json                    # 模型配置
-# - model-00001-of-00005.safetensors  # 模型权重文件
+# Should contain these key files:
+# - config.json                    # Model configuration
+# - model-00001-of-00005.safetensors  # Model weight files
 # - model-00002-of-00005.safetensors
 # - model-00003-of-00005.safetensors
 # - model-00004-of-00005.safetensors
 # - model-00005-of-00005.safetensors
-# - model.safetensors.index.json   # 权重索引
-# - tokenizer.json                 # 分词器
-# - preprocessor_config.json       # 预处理配置
-# - generation_config.json         # 生成配置
+# - model.safetensors.index.json   # Weight index
+# - tokenizer.json                 # Tokenizer
+# - preprocessor_config.json       # Preprocessor configuration
+# - generation_config.json         # Generation configuration
 ```
 
-## 🚀 使用方法
+## 🚀 Usage
 
+### 🎯 Automated Execution (Recommended for Beginners)
 
-🎯 开始处理 DocVQA 数据集...
+**One-click execution script:**
+```bash
+chmod +x run_all.sh
+./run_all.sh
 ```
 
-### 🔧 手动执行方式（高级用户）
+**Execution process:**
+1. ✅ Environment check and dependency verification
+2. 🤖 Automatic model download and configuration
+3. 📊 Sequential processing of six datasets
+4. 📈 Real-time progress display and quality statistics
 
-#### 第一步：生成Bbox数据
+**Example output:**
+```
+🚀 Starting Qwen2-VL Data Generation System...
+✅ Environment check passed
+🤖 Model loaded successfully: Qwen2-VL-7B-Instruct
+📊 Starting to process 6 datasets...
 
-**脚本功能：** `generate_bbox_one_agent_qwen.py`
-- 使用Qwen2-VL模型分析图像和问题
-- 生成精确的边界框坐标和描述
-- 支持4层生成策略确保数据质量
+🎯 Starting DocVQA dataset processing...
+```
+
+### 🔧 Manual Execution (Advanced Users)
+
+#### Step 1: Generate Bbox Data
+
+**Script function:** `generate_bbox_one_agent_qwen.py`
+- Uses Qwen2-VL model to analyze images and questions
+- Generates precise bounding box coordinates and descriptions
+- Supports 4-layer generation strategy to ensure data quality
 
 ```bash
 conda activate qwen2vl
 python generate_bbox_one_agent_qwen.py
 ```
 
-**执行流程详解：**
+**Detailed execution process:**
 
-1. **🎯 GPU选择界面**
+1. **🎯 GPU Selection Interface**
    ```
-   🚀 Qwen2-VL Bbox生成器
+   🚀 Qwen2-VL Bbox Generator
    ==================================================
 
-   🎯 检测到 4 个GPU，选择使用方式:
+   🎯 Detected 4 GPUs, select usage mode:
       GPU 0: NVIDIA GeForce RTX 4090
-         总内存: 24.0GB
-         已使用: 2.1GB
-         可用: 21.9GB
-         📊 使用率: 8.8%
+         Total memory: 24.0GB
+         Used: 2.1GB
+         Available: 21.9GB
+         📊 Usage: 8.8%
 
-   选择使用方式:
-      0. 使用所有GPU
-      1. 使用两个GPU (推荐，更快)
-      2. 使用单个GPU
+   Select usage mode:
+      0. Use all GPUs
+      1. Use two GPUs (recommended, faster)
+      2. Use single GPU
 
-   请选择 (0/1/2): 2
+   Please select (0/1/2): 2
    ```
 
-2. **📊 数据集选择**
-   - DocVQA: 文档问答 (~12K复杂问题)
-   - InfoVQA: 信息图表问答 (~22K复杂问题)
-   - TextVQA: 文本问答 (~13K复杂问题)
-   - Visual7W: 视觉问答 (~18K复杂问题)
-   - GQA: 场景图问答 (~153K复杂问题)
-   - VQAv2: 视觉问答v2 (~35K复杂问题)
+2. **📊 Dataset Selection**
+   - DocVQA: Document question answering (~12K complex questions)
+   - InfoVQA: Infographic question answering (~22K complex questions)
+   - TextVQA: Text-based question answering (~13K complex questions)
+   - Visual7W: Visual question answering (~18K complex questions)
+   - GQA: Scene graph question answering (~153K complex questions)
+   - VQAv2: Visual question answering v2 (~35K complex questions)
 
-3. **🔄 4层Bbox生成策略**
-   - **Layer 1 (最高质量)**: Qwen2-VL识别 + OCR精确定位
-     - 成功率: 60-80%
-     - 精度最高，结合视觉理解和文本定位
-   - **Layer 2 (中等质量)**: 仅Qwen2-VL识别
-     - 成功率: 15-25%
-     - OCR失败时的视觉方案
-   - **Layer 3 (保底方案)**: OCR + 关键词匹配
-     - 成功率: 5-15%
-     - Qwen2-VL失效时的文本匹配
-   - **Layer 4 (最后手段)**: 纯算法保底
-     - 成功率: <5%
-     - 确保每个问题都有输出
+3. **🔄 4-Layer Bbox Generation Strategy**
+   - **Layer 1 (Highest Quality)**: Qwen2-VL recognition + OCR precise localization
+     - Success rate: 60-80%
+     - Highest precision, combines visual understanding and text localization
+   - **Layer 2 (Medium Quality)**: Qwen2-VL recognition only
+     - Success rate: 15-25%
+     - Visual solution when OCR fails
+   - **Layer 3 (Fallback Solution)**: OCR + keyword matching
+     - Success rate: 5-15%
+     - Text matching when Qwen2-VL fails
+   - **Layer 4 (Last Resort)**: Pure algorithmic fallback
+     - Success rate: <5%
+     - Ensures output for every question
 
-#### 第二步：生成推理链数据
+#### Step 2: Generate Reasoning Chain Data
 
-**脚本功能：** `generate_relation_cycle.py`
-- 基于bbox数据构建推理链
-- 支持单步和多步推理
-- 自动判断推理类型（顺序/并列）
+**Script function:** `generate_relation_cycle.py`
+- Builds reasoning chains based on bbox data
+- Supports single-step and multi-step reasoning
+- Automatically determines reasoning type (sequential/parallel)
 
 ```bash
 conda activate qwen2vl
 python generate_relation_cycle.py
 ```
 
-**推理链生成流程详解：**
+**Reasoning Chain Generation Process:**
 
-1. **🎯 推理模式选择**
+1. **🎯 Reasoning Mode Selection**
    ```
-   🎯 选择bbox生成模式:
-     1. 仅生成单bbox推理链 (bbox_count == 1)
-        - 适用于简单的直接回答问题
-     2. 仅生成多bbox推理链 (bbox_count > 1)
-        - 适用于复杂的多步推理问题
-     3. 自动模式 (处理所有bbox数量)
-        - 处理所有类型的问题
+   🎯 Select bbox generation mode:
+     1. Generate single bbox reasoning chains only (bbox_count == 1)
+        - Suitable for simple direct-answer questions
+     2. Generate multi-bbox reasoning chains only (bbox_count > 1)
+        - Suitable for complex multi-step reasoning questions
+     3. Automatic mode (process all bbox counts)
+        - Processes all question types
 
-   请选择模式 (1/2/3): 3
+   Please select mode (1/2/3): 3
    ```
 
-2. **🔗 推理链类型**
-   - **单步推理**: 直接回答类问题
+2. **🔗 Reasoning Chain Types**
+   - **Single-step reasoning**: Direct answer questions
      ```
-     问题: "What is the contact person name?"
-     推理: "P.CARTER" directly answers the question about contact person
-     ```
-
-   - **顺序推理**: 步骤依赖的问题 (A→B→C)
-     ```
-     问题: "What is the process to submit application?"
-     推理链: Step1→Step2→Step3→Final Answer
+     Question: "What is the contact person name?"
+     Reasoning: "P.CARTER" directly answers the question about contact person
      ```
 
-   - **并列推理**: 并行证据的问题 (A→B; A→C)
+   - **Sequential reasoning**: Step-dependent questions (A→B→C)
      ```
-     问题: "Which country has the highest GDP?"
-     推理链: Country1_GDP; Country2_GDP; Country3_GDP → Comparison
+     Question: "What is the process to submit application?"
+     Reasoning chain: Step1→Step2→Step3→Final Answer
      ```
 
-3. **🤖 多轮Qwen分析**
-   - 每轮分析选择最相关的bbox
-   - 构建推理关系链条
-   - 自动判断是否需要继续推理
+   - **Parallel reasoning**: Questions requiring parallel evidence (A→B; A→C)
+     ```
+     Question: "Which country has the highest GDP?"
+     Reasoning chain: Country1_GDP; Country2_GDP; Country3_GDP → Comparison
+     ```
 
-### 📊 结果分析和质量评估
+3. **🤖 Multi-round Qwen Analysis**
+   - Each round selects the most relevant bbox
+   - Builds reasoning relationship chains
+   - Automatically determines if further reasoning is needed
 
-**数据质量分析脚本：**
+### 📊 Results Analysis and Quality Assessment
+
+**Data quality analysis script:**
 ```bash
 python analyze_results.py
 ```
 
-**分析内容包括：**
-- 📈 **Bbox生成质量分布**
-  - Layer 1 (最佳): 60-80%
-  - Layer 2 (良好): 15-25%
-  - Layer 3 (可用): 5-15%
-  - Layer 4 (保底): <5%
+**Analysis includes:**
+- 📈 **Bbox generation quality distribution**
+  - Layer 1 (Best): 60-80%
+  - Layer 2 (Good): 15-25%
+  - Layer 3 (Usable): 5-15%
+  - Layer 4 (Fallback): <5%
 
-- 🔗 **推理链类型统计**
-  - 单步推理比例
-  - 多步推理比例
-  - 平均推理步数
-  - 推理链完整性
+- 🔗 **Reasoning chain type statistics**
+  - Single-step reasoning ratio
+  - Multi-step reasoning ratio
+  - Average reasoning steps
+  - Reasoning chain completeness
 
-- 📊 **数据集完整性检查**
-  - 处理成功率
-  - 错误类型分布
-  - 数据格式验证
+- 📊 **Dataset completeness check**
+  - Processing success rate
+  - Error type distribution
+  - Data format validation
 
-**示例输出：**
+**Example output:**
 ```
-📊 DocVQA数据集分析报告
+📊 DocVQA Dataset Analysis Report
 ================================
-总样本数: 11,995
-处理成功: 11,892 (99.1%)
+Total samples: 11,995
+Successfully processed: 11,892 (99.1%)
 
-Bbox生成质量分布:
-├── Layer 1 (混合方案): 8,934 (75.1%) ✅
-├── Layer 2 (纯视觉): 2,156 (18.1%) ✅
-├── Layer 3 (OCR保底): 658 (5.5%) ⚠️
-└── Layer 4 (算法保底): 144 (1.2%) ⚠️
+Bbox Generation Quality Distribution:
+├── Layer 1 (Hybrid): 8,934 (75.1%) ✅
+├── Layer 2 (Vision-only): 2,156 (18.1%) ✅
+├── Layer 3 (OCR fallback): 658 (5.5%) ⚠️
+└── Layer 4 (Algorithm fallback): 144 (1.2%) ⚠️
 
-推理链类型分布:
-├── 单步推理: 7,234 (60.8%)
-├── 多步推理: 4,658 (39.2%)
-└── 平均步数: 1.6步
+Reasoning Chain Type Distribution:
+├── Single-step reasoning: 7,234 (60.8%)
+├── Multi-step reasoning: 4,658 (39.2%)
+└── Average steps: 1.6 steps
 ```
 
-### 💡 数据使用示例
+### 💡 Data Usage Example
 
-**学习如何使用生成的数据：**
+**Learn how to use the generated data:**
 ```bash
 python example_usage.py
 ```
 
-### 📁 数据集目录结构
+### 📁 Dataset Directory Structure
 
 ```
-dataset_with_GT/                    # 原始数据集
+dataset_with_GT/                    # Original datasets
 ├── Docvqa/
-│   └── DocVQA_complex_4plus.json  # 4步以上复杂问题
+│   └── DocVQA_complex_4plus.json  # 4+ step complex questions
 ├── GQA/
-│   └── GQA_merged_complex_6plus.json  # 6步以上复杂问题
+│   └── GQA_merged_complex_6plus.json  # 6+ step complex questions
 ├── InfoVQA/
 │   └── InfoVQA_complex_4plus_parallel.json
 ├── TextVQA/
@@ -358,56 +378,55 @@ dataset_with_GT/                    # 原始数据集
 └── Visual7W/
     └── Visual7W_complex_3plus_parallel.json
 
-playground/data/cot/                # 图像文件
-├── docvqa/          # DocVQA图像 (.png)
-├── gqa/             # GQA图像 (.jpg)
-├── textvqa/         # TextVQA图像 (.jpg)
-├── coco/            # COCO图像 (.jpg) - VQAv2使用
-├── v7w/             # Visual7W图像 (.jpg)
-└── infographicsvqa/ # InfoVQA图像 (.jpeg)
+playground/data/cot/                # Image files
+├── docvqa/          # DocVQA images (.png)
+├── gqa/             # GQA images (.jpg)
+├── textvqa/         # TextVQA images (.jpg)
+├── coco/            # COCO images (.jpg) - used by VQAv2
+├── v7w/             # Visual7W images (.jpg)
+└── infographicsvqa/ # InfoVQA images (.jpeg)
 ```
 
-### 📋 数据格式详解
+### 📋 Data Format Details
 
-#### 🔍 Bbox数据格式 (images_bbox/)
+#### 🔍 Bbox Data Format (images_bbox/)
 
 ```json
 {
-  "question_id": "DocVQA_338",                    // 唯一问题ID
+  "question_id": "DocVQA_338",                    // Unique question ID
   "question": "what is the contact person name mentioned in letter?",
-  "image_name": "xnbl0037_1",                    // 图像文件名（不含扩展名）
-  "answers": ["P. Carter", "p. carter"],         // 标准答案列表
+  "image_name": "xnbl0037_1",                    // Image filename (without extension)
+  "answers": ["P. Carter", "p. carter"],         // Standard answer list
   "bbox_analysis": {
-    "relevant_elements": [                       // 相关区域列表
+    "relevant_elements": [                       // Relevant regions list
       {
-        "description": "Contact person name",   // 区域描述
-        "bbox": [0.33, 0.31, 0.41, 0.34],     // 归一化坐标 [x1,y1,x2,y2]
+        "description": "Contact person name",   // Region description
+        "bbox": [0.33, 0.31, 0.41, 0.34],     // Normalized coordinates [x1,y1,x2,y2]
         "selection_reason": "Contains the contact person information",
         "content_relation": "This region shows the name P.CARTER which directly answers the question"
       }
     ],
-    "generation_method": "hybrid_qwen2vl_ocr",   // 生成方法
-    "generation_layer": 1,                       // 生成层级 (1-4)
+    "generation_method": "hybrid_qwen2vl_ocr",   // Generation method
+    "generation_layer": 1,                       // Generation layer (1-4)
     "generation_description": "Generated by hybrid method: Qwen2-VL + OCR precise localization"
   }
 }
 ```
 
+## 🎯 Generated Results Details
 
-## 🎯 生成结果详解
+### 📦 Bbox Generation Results Layering
 
-### 📦 Bbox生成结果分层
-
-#### Layer 1: 混合方案 (最高质量 60-80%)
-- **方法**: Qwen2-VL视觉理解 + OCR精确定位
-- **优势**: 结合视觉语义理解和文本精确定位
-- **适用**: 包含文本的复杂视觉问题
-- **示例**:
+#### Layer 1: Hybrid Solution (Highest Quality 60-80%)
+- **Method**: Qwen2-VL visual understanding + OCR precise localization
+- **Advantage**: Combines visual semantic understanding with precise text localization
+- **Applicable**: Complex visual questions containing text
+- **Example**:
   ```json
   {
     "generation_method": "hybrid_qwen2vl_ocr",
     "generation_layer": 1,
-    "bbox": [0.245, 0.156, 0.387, 0.189],  // 精确的文本边界
+    "bbox": [0.245, 0.156, 0.387, 0.189],  // Precise text boundaries
     "match_info": {
       "ocr_confidence": 0.95,
       "text_match_score": 0.87
@@ -415,25 +434,25 @@ playground/data/cot/                # 图像文件
   }
   ```
 
-#### Layer 2: 纯视觉方案 (中等质量 15-25%)
-- **方法**: 仅使用Qwen2-VL进行区域识别
-- **优势**: 处理OCR无法识别的视觉元素
-- **适用**: 图像、图标、复杂布局
-- **示例**:
+#### Layer 2: Vision-only Solution (Medium Quality 15-25%)
+- **Method**: Uses only Qwen2-VL for region recognition
+- **Advantage**: Handles visual elements that OCR cannot recognize
+- **Applicable**: Images, icons, complex layouts
+- **Example**:
   ```json
   {
     "generation_method": "qwen2vl_only",
     "generation_layer": 2,
-    "bbox": [0.1, 0.2, 0.4, 0.6],  // 视觉区域边界
+    "bbox": [0.1, 0.2, 0.4, 0.6],  // Visual region boundaries
     "description": "Chart showing sales data"
   }
   ```
 
-#### Layer 3: OCR保底方案 (可用质量 5-15%)
-- **方法**: OCR文本检测 + 关键词匹配
-- **优势**: Qwen2-VL失效时的文本方案
-- **适用**: 简单文本问题
-- **示例**:
+#### Layer 3: OCR Fallback Solution (Usable Quality 5-15%)
+- **Method**: OCR text detection + keyword matching
+- **Advantage**: Text-based solution when Qwen2-VL fails
+- **Applicable**: Simple text questions
+- **Example**:
   ```json
   {
     "generation_method": "emergency_ocr",
@@ -443,18 +462,16 @@ playground/data/cot/                # 图像文件
   }
   ```
 
-#### Layer 4: 算法保底 (保底质量 <5%)
-- **方法**: 基于问题关键词的算法生成
-- **优势**: 确保每个问题都有输出
-- **适用**: 所有其他方法都失败的情况
-- **示例**:
+#### Layer 4: Algorithm Fallback (Fallback Quality <5%)
+- **Method**: Algorithmic generation based on question keywords
+- **Advantage**: Ensures output for every question
+- **Applicable**: When all other methods fail
+- **Example**:
   ```json
   {
     "generation_method": "basic_fallback",
     "generation_layer": 4,
-    "bbox": [0.05, 0.1, 0.3, 0.15],  // 假设位置
+    "bbox": [0.05, 0.1, 0.3, 0.15],  // Assumed position
     "content": "Text containing 'contact'"
   }
   ```
-
-
