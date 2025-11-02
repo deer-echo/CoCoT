@@ -1,12 +1,19 @@
-# CoCoT Data Generation System
-This is a data generation system for Collaborative Cross-modal Chain-of-Thought (CoCoT) based on Qwen2-VL, designed to produce high-quality training data with dynamic multi-region grounding and relation-aware reasoning chains.
+# CoCoT_70K: Collaborative Cross-modal Chain-of-Thought Dataset
 
-🔍 Related Research: This system implements the methodology described in the paper "Watch Wider and Think Deeper: Collaborative Cross-modal Chain-of-Thought for Complex Visual Reasoning", addressing limitations of single-region CoT methods through multi-region collaboration.
+## Brief Intro, Welcome :-)
 
-## 📁 Project Structure
+This is the implementation of our work: "**Watch Wider and Think Deeper: Collaborative Cross-modal Chain-of-Thought for Complex Visual Reasoning**" which is accepted by NIPS 2025 workshop. 
 
-```
-Generate_Data_Qwen2-VL/
+In this work we generated **74,691** complex question-answer pairs including multiple bounding boxes and chain of thought, among 6 general datasets. Specifically, we selected some complex questions, cited bounding boxes which may help answering the question, and use an iterative approach to organize them to form a chain of thought for each question. Our dataset achieving an average accuracy improvement of 15.4% on LLaVA-1.5 and 4.0% on Qwen2-VL during inference process. 
+
+ ![dataset](pic/dataset.png)
+
+
+
+Our file structure is as follows
+
+```json
+CoCoT/
 ├── 🔧 Core Scripts
 │   ├── generate_bbox_one_agent_qwen.py    # Main script: generates bbox data
 │   └── generate_relation_cycle.py         # Main script: generates reasoning chain data
@@ -54,34 +61,34 @@ Generate_Data_Qwen2-VL/
 │       ├── InfoVQA_complex_reasoning_chains_one_agent.json
 │       ├── TextVQA_complex_reasoning_chains_one_agent.json
 │       ├── VQAv2_complex_reasoning_chains_one_agent.json
-│       └── Visual7W_complex_reasoning_chains_one_agent.json
-└── 🗂️ Other Files
-    ├── __pycache__/                       # Python cache files
-    └── *.log                              # Runtime log files
+└──     └── Visual7W_complex_reasoning_chains_one_agent.json    
 ```
 
-## 📋 File Function Description
 
-### 🔧 Core Scripts
-- **`generate_bbox_one_agent_qwen.py`**: Uses Qwen2-VL to generate bounding box data with a 4-layer generation strategy
-- **`generate_relation_cycle.py`**: Builds reasoning chains based on bbox data, supporting single-step and multi-step reasoning
 
-### 📖 Configuration Files
-- **`requirements.txt`**: Carefully curated pip dependency list with version pinning
-- **`environment.yml`**: Conda environment configuration file for one-click environment creation
-- **`Dockerfile`**: Docker image configuration supporting containerized deployment
-- **`docker-compose.yml`**: Docker orchestration configuration for simplified container usage
+## Data selection
 
-### 📊 Data Directories
-- **`dataset_with_GT/`**: Original datasets containing questions, answers, and image paths
-- **`playground/data/cot/`**: Image files, categorized and stored by dataset
-- **`images_bbox/`**: Generated bbox data containing bounding box coordinates and descriptions
-- **`reasoning_chains/`**: Generated reasoning chain data containing reasoning steps and logical relationships
+We applied two criteria to filter out complex questions (which need more than one bounding box to answer them): (1) questions containing
+multiple keywords (thresholds varying by dataset from >3 to >6 keywords) and (2) answers requiring
+compositional reasoning (containing conjunctions or multiple elements). The data we selected is located at folder`dataset_with_GT`.
 
-## 🔧 Environment Setup
+| Dataset                                  | Samples | Filter Criteria                      | Multi Region Ratio | Source Files                                                 |
+| ---------------------------------------- | ------- | ------------------------------------ | ------------------ | ------------------------------------------------------------ |
+| GQA [[1]](#hudson2019gqa)                | 9,740   | Keywords > 6                         | 41.4%              | `GQA_val_balanced.json`<br>`GQA_val_all.json`<br>`GQA_train_balanced.json` |
+| DocVQA [[2]](#mathew2021docvqa)          | 10,650  | Keywords > 4 or answers with ",/and" | 18.1%              | `docvqa_train_reordered.jsonl`<br>`docvqa_train_v1.0_reordered.json` |
+| InfoVQA [[3]](#mathew2022infographicvqa) | 14,421  | Keywords > 4 or parallel answers     | 39.1%              | `infographicVQA_train_v1.0.json`<br>`infographicVQA_val_v1.0.json` |
+| TextVQA [[4]](#singh2019towards)         | 8,205   | Keywords > 3 or conjunction answers  | 31.2%              | `TextVQA_train.json`                                         |
+| Visual7W [[5]](#zhu2016visual7w)         | 15,675  | Keywords > 3 or multi-part answers   | 51.5%              | `Visual7W_telling.json`                                      |
+| VQAv2 [[6]](#goyal2017making)            | 16,270  | Keywords > 5 or compound answers     | 54.5%              | `VQA_v2_train.json`                                          |
 
-### Image Data Download
-Download corresponding datasets and configure them in the appropriate paths under `playground/data/cot`:
+
+
+## Setup
+
+### Download Image & Model
+
+Firstly, you have to download images and configure them in the paths under `playground/data/cot`
+
 - **COCO**: [images](http://images.cocodataset.org/zips/train2014.zip) (82,783 images)
 - **DocVQA**: [homepage](https://www.docvqa.org/datasets/docvqa) (10,196 images)
 - **TextVQA**: [images](https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip) (25,119 images)
@@ -89,22 +96,25 @@ Download corresponding datasets and configure them in the appropriate paths unde
 - **GQA**: [images](https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip) (148,854 images)
 - **InfographicVQA**: [homepage](https://www.docvqa.org/datasets/infographicvqa) (5,485 images)
 
-### 🌟 Quick Environment Setup (Recommended)
-
-#### Method 1: Using Conda Environment File (Simplest)
-```bash
-# 1. Clone or download the project
-git clone <repository-url>
-cd Generate_Data_Qwen2-VL
-
-# 2. Create conda environment (automatically installs all dependencies)
-conda env create -f environment.yml
-
-# 3. Activate environment
-conda activate qwen2vl
+```
+playground/                        # Data storage directory
+│       └── data/                         # Various intermediate and final data
+│           └── cot/                      # Image data categorized by dataset
+│              ├── docvqa/ffbf0023_4.png...              # DocVQA images
+│              ├── gqa/1.jpg...                            # GQA images
+│              ├── textvqa/0a0bc91825468c45.jpg...             # TextVQA images
+│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO images (VQAv2)
+│              ├── v7w/v7w_1.jpg...                 # Visual7W images
+│              └── infographicsvqa/10002.jpeg...    # InfoVQA images
+│          
 ```
 
-#### Method 2: Manual Environment Creation (More Flexible)
+Also, qwen2-VL-7B model should be downloaded to path `Qwen2-VL-7B-Instruct` which will be used to generate bounding boxes and chain of thought. 
+
+### Environment Setup
+
+You can easily setup environment by these command, also we provided docker and .yml files.
+
 ```bash
 # 1. Create base environment
 conda create -n qwen2vl python=3.9 -y
@@ -118,278 +128,11 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install -r requirements.txt
 ```
 
-### 📥 Model Download
 
-#### 🤖 Qwen2-VL-7B-Instruct Model
 
-**Automatic Download Script (Recommended):**
-```bash
-# Download from ModelScope (recommended for Chinese users, faster)
-python download_model.py --source modelscope
+## Generate multiple bounding boxes
 
-# Download from HuggingFace (international users)
-python download_model.py --source huggingface
-
-# Specify download directory
-python download_model.py --model-dir ./models/Qwen2-VL-7B-Instruct --source modelscope
-```
-
-**Manual Download Methods:**
-```bash
-# Method 1: ModelScope (recommended in China, ~15GB)
-pip install modelscope
-python -c "
-from modelscope import snapshot_download
-snapshot_download('qwen/Qwen2-VL-7B-Instruct',
-                 local_dir='./Qwen2-VL-7B-Instruct',
-                 cache_dir='./cache')
-"
-
-# Method 2: HuggingFace (requires good network connection)
-git lfs install
-git clone https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct
-
-# Method 3: Using HuggingFace Hub
-pip install huggingface_hub
-python -c "
-from huggingface_hub import snapshot_download
-snapshot_download('Qwen/Qwen2-VL-7B-Instruct',
-                 local_dir='./Qwen2-VL-7B-Instruct')
-"
-```
-
-**Model File Structure Verification:**
-```bash
-# Check model file integrity
-ls -la Qwen2-VL-7B-Instruct/
-# Should contain these key files:
-# - config.json                    # Model configuration
-# - model-00001-of-00005.safetensors  # Model weight files
-# - model-00002-of-00005.safetensors
-# - model-00003-of-00005.safetensors
-# - model-00004-of-00005.safetensors
-# - model-00005-of-00005.safetensors
-# - model.safetensors.index.json   # Weight index
-# - tokenizer.json                 # Tokenizer
-# - preprocessor_config.json       # Preprocessor configuration
-# - generation_config.json         # Generation configuration
-```
-
-## 🚀 Usage
-
-### 🎯 Automated Execution (Recommended for Beginners)
-
-**One-click execution script:**
-```bash
-chmod +x run_all.sh
-./run_all.sh
-```
-
-**Execution process:**
-1. ✅ Environment check and dependency verification
-2. 🤖 Automatic model download and configuration
-3. 📊 Sequential processing of six datasets
-4. 📈 Real-time progress display and quality statistics
-
-**Example output:**
-```
-🚀 Starting Qwen2-VL Data Generation System...
-✅ Environment check passed
-🤖 Model loaded successfully: Qwen2-VL-7B-Instruct
-📊 Starting to process 6 datasets...
-
-🎯 Starting DocVQA dataset processing...
-```
-
-### 🔧 Manual Execution (Advanced Users)
-
-#### Step 1: Generate Bbox Data
-
-**Script function:** `generate_bbox_one_agent_qwen.py`
-- Uses Qwen2-VL model to analyze images and questions
-- Generates precise bounding box coordinates and descriptions
-- Supports 4-layer generation strategy to ensure data quality
-
-```bash
-conda activate qwen2vl
-python generate_bbox_one_agent_qwen.py
-```
-
-**Detailed execution process:**
-
-1. **🎯 GPU Selection Interface**
-   ```
-   🚀 Qwen2-VL Bbox Generator
-   ==================================================
-
-   🎯 Detected 4 GPUs, select usage mode:
-      GPU 0: NVIDIA GeForce RTX 4090
-         Total memory: 24.0GB
-         Used: 2.1GB
-         Available: 21.9GB
-         📊 Usage: 8.8%
-
-   Select usage mode:
-      0. Use all GPUs
-      1. Use two GPUs (recommended, faster)
-      2. Use single GPU
-
-   Please select (0/1/2): 2
-   ```
-
-2. **📊 Dataset Selection**
-   - DocVQA: Document question answering (~12K complex questions)
-   - InfoVQA: Infographic question answering (~22K complex questions)
-   - TextVQA: Text-based question answering (~13K complex questions)
-   - Visual7W: Visual question answering (~18K complex questions)
-   - GQA: Scene graph question answering (~153K complex questions)
-   - VQAv2: Visual question answering v2 (~35K complex questions)
-
-3. **🔄 4-Layer Bbox Generation Strategy**
-   - **Layer 1 (Highest Quality)**: Qwen2-VL recognition + OCR precise localization
-     - Success rate: 60-80%
-     - Highest precision, combines visual understanding and text localization
-   - **Layer 2 (Medium Quality)**: Qwen2-VL recognition only
-     - Success rate: 15-25%
-     - Visual solution when OCR fails
-   - **Layer 3 (Fallback Solution)**: OCR + keyword matching
-     - Success rate: 5-15%
-     - Text matching when Qwen2-VL fails
-   - **Layer 4 (Last Resort)**: Pure algorithmic fallback
-     - Success rate: <5%
-     - Ensures output for every question
-
-#### Step 2: Generate Reasoning Chain Data
-
-**Script function:** `generate_relation_cycle.py`
-- Builds reasoning chains based on bbox data
-- Supports single-step and multi-step reasoning
-- Automatically determines reasoning type (sequential/parallel)
-
-```bash
-conda activate qwen2vl
-python generate_relation_cycle.py
-```
-
-**Reasoning Chain Generation Process:**
-
-1. **🎯 Reasoning Mode Selection**
-   ```
-   🎯 Select bbox generation mode:
-     1. Generate single bbox reasoning chains only (bbox_count == 1)
-        - Suitable for simple direct-answer questions
-     2. Generate multi-bbox reasoning chains only (bbox_count > 1)
-        - Suitable for complex multi-step reasoning questions
-     3. Automatic mode (process all bbox counts)
-        - Processes all question types
-
-   Please select mode (1/2/3): 3
-   ```
-
-2. **🔗 Reasoning Chain Types**
-   - **Single-step reasoning**: Direct answer questions
-     ```
-     Question: "What is the contact person name?"
-     Reasoning: "P.CARTER" directly answers the question about contact person
-     ```
-
-   - **Sequential reasoning**: Step-dependent questions (A→B→C)
-     ```
-     Question: "What is the process to submit application?"
-     Reasoning chain: Step1→Step2→Step3→Final Answer
-     ```
-
-   - **Parallel reasoning**: Questions requiring parallel evidence (A→B; A→C)
-     ```
-     Question: "Which country has the highest GDP?"
-     Reasoning chain: Country1_GDP; Country2_GDP; Country3_GDP → Comparison
-     ```
-
-3. **🤖 Multi-round Qwen Analysis**
-   - Each round selects the most relevant bbox
-   - Builds reasoning relationship chains
-   - Automatically determines if further reasoning is needed
-
-### 📊 Results Analysis and Quality Assessment
-
-**Data quality analysis script:**
-```bash
-python analyze_results.py
-```
-
-**Analysis includes:**
-- 📈 **Bbox generation quality distribution**
-  - Layer 1 (Best): 60-80%
-  - Layer 2 (Good): 15-25%
-  - Layer 3 (Usable): 5-15%
-  - Layer 4 (Fallback): <5%
-
-- 🔗 **Reasoning chain type statistics**
-  - Single-step reasoning ratio
-  - Multi-step reasoning ratio
-  - Average reasoning steps
-  - Reasoning chain completeness
-
-- 📊 **Dataset completeness check**
-  - Processing success rate
-  - Error type distribution
-  - Data format validation
-
-**Example output:**
-```
-📊 DocVQA Dataset Analysis Report
-================================
-Total samples: 11,995
-Successfully processed: 11,892 (99.1%)
-
-Bbox Generation Quality Distribution:
-├── Layer 1 (Hybrid): 8,934 (75.1%) ✅
-├── Layer 2 (Vision-only): 2,156 (18.1%) ✅
-├── Layer 3 (OCR fallback): 658 (5.5%) ⚠️
-└── Layer 4 (Algorithm fallback): 144 (1.2%) ⚠️
-
-Reasoning Chain Type Distribution:
-├── Single-step reasoning: 7,234 (60.8%)
-├── Multi-step reasoning: 4,658 (39.2%)
-└── Average steps: 1.6 steps
-```
-
-### 💡 Data Usage Example
-
-**Learn how to use the generated data:**
-```bash
-python example_usage.py
-```
-
-### 📁 Dataset Directory Structure
-
-```
-dataset_with_GT/                    # Original datasets
-├── Docvqa/
-│   └── DocVQA_complex_4plus.json  # 4+ step complex questions
-├── GQA/
-│   └── GQA_merged_complex_6plus.json  # 6+ step complex questions
-├── InfoVQA/
-│   └── InfoVQA_complex_4plus_parallel.json
-├── TextVQA/
-│   └── TextVQA_complex_3plus_parallel.json
-├── VQAv2/
-│   └── VQAv2_complex_5plus_parallel.json
-└── Visual7W/
-    └── Visual7W_complex_3plus_parallel.json
-
-playground/data/cot/                # Image files
-├── docvqa/          # DocVQA images (.png)
-├── gqa/             # GQA images (.jpg)
-├── textvqa/         # TextVQA images (.jpg)
-├── coco/            # COCO images (.jpg) - used by VQAv2
-├── v7w/             # Visual7W images (.jpg)
-└── infographicsvqa/ # InfoVQA images (.jpeg)
-```
-
-### 📋 Data Format Details
-
-#### 🔍 Bbox Data Format (images_bbox/)
+Just using `python generate_bbox_one_agent_qwen.py` to generate boxes with details under `images_bbox` folder.  To better match regions of interest we applied ROC to enhance the boxes generation. 
 
 ```json
 {
@@ -413,15 +156,10 @@ playground/data/cot/                # Image files
 }
 ```
 
-## 🎯 Generated Results Details
+**Layer 1** means that we generate boxes and correct them by ROC successfully.
 
-### 📦 Bbox Generation Results Layering
+- Example:
 
-#### Layer 1: Hybrid Solution (Highest Quality 60-80%)
-- **Method**: Qwen2-VL visual understanding + OCR precise localization
-- **Advantage**: Combines visual semantic understanding with precise text localization
-- **Applicable**: Complex visual questions containing text
-- **Example**:
   ```json
   {
     "generation_method": "hybrid_qwen2vl_ocr",
@@ -434,11 +172,10 @@ playground/data/cot/                # Image files
   }
   ```
 
-#### Layer 2: Vision-only Solution (Medium Quality 15-25%)
-- **Method**: Uses only Qwen2-VL for region recognition
-- **Advantage**: Handles visual elements that OCR cannot recognize
-- **Applicable**: Images, icons, complex layouts
-- **Example**:
+**Layer 2** means that qwen generates valid boxes but can't be matched to ROC region, this condition always happens in general image datasets which even don't have ROC data, likes gqa.  
+
+- Example:
+
   ```json
   {
     "generation_method": "qwen2vl_only",
@@ -448,11 +185,10 @@ playground/data/cot/                # Image files
   }
   ```
 
-#### Layer 3: OCR Fallback Solution (Usable Quality 5-15%)
-- **Method**: OCR text detection + keyword matching
-- **Advantage**: Text-based solution when Qwen2-VL fails
-- **Applicable**: Simple text questions
-- **Example**:
+**Layer 3** is designed to prevent from qwen failed condition. If qwen failed to generate valid box, we will parse question and use OCR to find relevant regions.  
+
+- Example:
+
   ```json
   {
     "generation_method": "emergency_ocr",
@@ -462,11 +198,10 @@ playground/data/cot/                # Image files
   }
   ```
 
-#### Layer 4: Algorithm Fallback (Fallback Quality <5%)
-- **Method**: Algorithmic generation based on question keywords
-- **Advantage**: Ensures output for every question
-- **Applicable**: When all other methods fail
-- **Example**:
+**Layer 4** is used as a fallback, just generate three fixed boxes to ensure that answer is not empty
+
+- Example:
+
   ```json
   {
     "generation_method": "basic_fallback",
@@ -475,3 +210,164 @@ playground/data/cot/                # Image files
     "content": "Text containing 'contact'"
   }
   ```
+
+## Generate CoT
+
+After boxes generation, run `python generate_relation_cycle.py` to generate chain of thought with order under `reasoning_chains` folder.  Our method select one box each step and generate reason, till it find enough to answer question. An example is shown as follow: 
+
+![image-20251102211646496](CoCoT_7w Collaborative Cross-modal Chain-of-Thought Dataset/image-20251102211646496.png)
+
+
+
+```json
+{
+    "id": "Visual7W_4499",
+    "image": [
+      "v7w_1593232"
+    ],
+    "question": "Who is in the picture?",
+    "reasoning_chain": {
+      "chain_type": "sequential",
+      "reasoning_steps": [
+        {
+          "step": 1,
+          "bbox_index": 0,
+          "bbox_content": "A woman in a beige sweater cutting pizza",
+          "description": "A woman in a beige sweater cutting pizza",
+          "generated_reasoning": "This contains the main subject of the image, which is the woman cutting pizza.",
+          "role": "picture",
+          "relationship_to_previous": "sequential",
+          "qwen_analysis": "SELECTED_REGION: [ Region 0] \nROLE: picture\nREASONon: This contains the main subject of the image, which is the woman cutting pizza.\nRELrelationship: sequential",
+          "bbox_coordinates": [
+            0.0,
+            0.19,
+            0.51,
+            0.8
+          ]
+        },
+        {
+          "step": 2,
+          "bbox_index": 1,
+          "bbox_content": "A man in a red sweater holding a child",
+          "description": "A man in a red sweater holding a child",
+          "generated_reasoning": "The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza.",
+          "role": "nextstep",
+          "relationship_to_previous": "sequential",
+          "qwen_analysis": "SELECTED_REGION: [ Region 1] \nROLE: nextstep\nREASONon: The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza.\nRELATIONSHIP: sequential",
+          "bbox_coordinates": [
+            0.44,
+            0.17,
+            0.8,
+            0.63
+          ]
+        },
+        {
+          "step": 3,
+          "bbox_index": 3,
+          "bbox_content": "A child in a pink sweater",
+          "description": "A child in a pink sweater",
+          "generated_reasoning": "The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child.",
+          "role": "conclusion",
+          "relationship_to_previous": "sequential",
+          "qwen_analysis": "SELECTED_REGION: [ Region 3] \nROLE: conclusion\nREASONon: The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child.\nRELationship: sequential",
+          "bbox_coordinates": [
+            0.54,
+            0.31,
+            0.73,
+            0.63
+          ]
+        }
+      ],
+      "total_steps": 3,
+      "final_answer": "A woman in a beige sweater cutting pizza, a man in a red sweater holding a child, and a child in a pink sweater.",
+      "keywords_used": {
+        "keywords": [
+          "picture"
+        ],
+        "numbers": [],
+        "quoted_terms": [],
+        "all_terms": [
+          "picture"
+        ]
+      },
+      "multi_round_analysis": true,
+      "question_type": "sequential",
+      "chain_text": "This contains the main subject of the image, which is the woman cutting pizza. -> The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza. -> The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child.",
+      "chain_format": "sequential",
+      "reasoning_chain_description": "Question type: sequential, Chain: This contains the main subject of the image, which is the woman cutting pizza. -> The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza. -> The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child."
+    },
+    "bbox_elements": [
+      {
+        "description": "A woman in a beige sweater cutting pizza",
+        "selection_reason": "The woman is actively engaged in cutting pizza, which is a central activity in the image.",
+        "content_relation": "The woman's action of cutting pizza is the main focus of the image.",
+        "bbox": [
+          0.0,
+          0.19,
+          0.51,
+          0.8
+        ]
+      },
+      {
+        "description": "A man in a red sweater holding a child",
+        "selection_reason": "The man is holding a child, which is a significant detail in the image.",
+        "content_relation": "The man's interaction with the child adds a family dynamic to the scene.",
+        "bbox": [
+          0.44,
+          0.17,
+          0.8,
+          0.63
+        ]
+      },
+      {
+        "description": "A person holding a plate",
+        "selection_reason": "The person is holding a plate, which is relevant to the activity of eating pizza.",
+        "content_relation": "The plate indicates that the pizza is being served and consumed.",
+        "bbox": [
+          0.65,
+          0.54,
+          0.95,
+          0.8
+        ]
+      },
+      {
+        "description": "A child in a pink sweater",
+        "selection_reason": "The child is wearing a pink sweater, which is a notable detail.",
+        "content_relation": "The child's attire adds color and liveliness to the image.",
+        "bbox": [
+          0.54,
+          0.31,
+          0.73,
+          0.63
+        ]
+      }
+    ],
+    "ground_truth_answers": [
+      "A man, a lady, and a child."
+    ],
+    "stats": {
+      "bbox_count": 4,
+      "original_bbox_count": 4,
+      "removed_bbox_count": 0,
+      "data_cleaning_applied": true
+    }
+  },
+```
+
+
+
+
+
+## References
+
+<a id="hudson2019gqa">[1]</a> Hudson, D. A., & Manning, C. D. (2019). GQA: A New Dataset for Real-World Visual Reasoning and Compositional Question Answering.
+
+<a id="mathew2021docvqa">[2]</a> Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for Document Visual Question Answering.
+
+<a id="mathew2022infographicvqa">[3]</a> Mathew, M., et al. (2022). InfographicVQA: A Large-Scale Dataset for Infographic Visual Question Answering.
+
+<a id="singh2019towards">[4]</a> Singh, A., et al. (2019). Towards VQA Models That Can Read.
+
+<a id="zhu2016visual7w">[5]</a> Zhu, Y., et al. (2016). Visual7W: Grounded Question Answering in Images.
+
+<a id="goyal2017making">[6]</a> Goyal, Y., et al. (2017). Making the V in VQA Matter: Elevating the Role of Image Understanding in Visual Question Answering.
