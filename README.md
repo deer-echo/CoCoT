@@ -6,13 +6,13 @@ This is the implementation of our work: "**Watch Wider and Think Deeper: Collabo
 
 In this work we generated **74,691** complex question-answer pairs including multiple bounding boxes and chain of thought, among 6 general datasets. Specifically, we selected some complex questions, cited bounding boxes which may help answering the question, and use an iterative approach to organize them to form a chain of thought for each question. Our dataset achieving an average accuracy improvement of 15.4% on LLaVA-1.5 and 4.0% on Qwen2-VL during inference process. 
 
- ![dataset](pic/dataset.png)
+ ![dataset](dataset.png)
 
 
 
 Our file structure is as follows
 
-```json
+```
 CoCoT/
 ├── 🔧 Core Scripts
 │   ├── generate_bbox_one_agent_qwen.py    # Main script: generates bbox data
@@ -215,7 +215,7 @@ Just using `python generate_bbox_one_agent_qwen.py` to generate boxes with detai
 
 After boxes generation, run `python generate_relation_cycle.py` to generate chain of thought with order under `reasoning_chains` folder.  Our method select one box each step and generate reason, till it find enough to answer question. An example is shown as follow: 
 
-![image-20251102211646496](CoCoT_7w Collaborative Cross-modal Chain-of-Thought Dataset/image-20251102211646496.png)
+![image-20251102211646496](image-20251102211646496.png)
 
 
 
