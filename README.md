@@ -8,7 +8,6 @@ In this work we generated **74,691** complex question-answer pairs including mul
 
 ![dataset](https://github.com/deer-echo/CoCoT/raw/main/dataset.png)
 
-![example](https://github.com/deer-echo/CoCoT/raw/main/example.png)
 
 
 
@@ -217,7 +216,7 @@ Just using `python generate_bbox_one_agent_qwen.py` to generate boxes with detai
 
 After boxes generation, run `python generate_relation_cycle.py` to generate chain of thought with order under `reasoning_chains` folder.  Our method select one box each step and generate reason, till it find enough to answer question. An example is shown as follow: 
 
-![image-example](https://github.com/deer-echo/CoCoT/blob/main/example.png)
+![example](https://github.com/deer-echo/CoCoT/raw/main/example.png)
 
 
 
