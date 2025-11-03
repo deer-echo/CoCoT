@@ -1,84 +1,94 @@
-# Qwen2-VL 数据生成系统
+# CoCoT_70K: Collaborative Cross-modal Chain-of-Thought Dataset
 
-基于 Qwen2-VL 模型的视觉问答数据生成系统，用于生成包含边界框(bbox)和推理链的高质量训练数据。
+## Brief Intro, Welcome :-)
 
-## 📁 项目结构
+This is the implementation of our work: "**Watch Wider and Think Deeper: Collaborative Cross-modal Chain-of-Thought for Complex Visual Reasoning**" which is accepted by NIPS 2025 workshop. 
+
+In this work we generated **74,691** complex question-answer pairs including multiple bounding boxes and chain of thought, among 6 general datasets. Specifically, we selected some complex questions, cited bounding boxes which may help answering the question, and use an iterative approach to organize them to form a chain of thought for each question. Our dataset achieving an average accuracy improvement of 15.4% on LLaVA-1.5 and 4.0% on Qwen2-VL during inference process. 
+
+ ![dataset](dataset.png)
+
+
+
+Our file structure is as follows
 
 ```
-Generate_Data_Qwen2-VL/
-├── 🔧 核心脚本
-│   ├── generate_bbox_one_agent_qwen.py    # 主要脚本：生成bbox数据
-│   └── generate_relation_cycle.py         # 主要脚本：生成推理链数据
+CoCoT/
+├── 🔧 Core Scripts
+│   ├── generate_bbox_one_agent_qwen.py    # Main script: generates bbox data
+│   └── generate_relation_cycle.py         # Main script: generates reasoning chain data
 
-├── 📖 文档和配置
-│   ├── README.md                          # 📖 本文档
-│   ├── requirements.txt                   # pip依赖包列表
-│   ├── current_requirements.txt           # 当前环境完整包列表
-│   ├── environment.yml                    # conda环境配置
-│   ├── Dockerfile                         # Docker镜像配置
-│   └── docker-compose.yml                # Docker编排配置
-├── 🤖 模型文件
-│   └── Qwen2-VL-7B-Instruct/             # Qwen2-VL模型文件
-├── 📊 数据集
-│   ├── dataset_with_GT/                   # 原始数据集（带Ground Truth）
-│   │   ├── Docvqa/DocVQA_complex_4plus.json                       # DocVQA数据集
-│   │   ├── GQA/GQA_merged_complex_6plus.json                      # GQA数据集
-│   │   ├── InfoVQA/InfoVQA_complex_4plus_parallel.json            # InfoVQA数据集
-│   │   ├── TextVQA/TextVQA_complex_3plus_parallel.json           # TextVQA数据集
-│   │   ├── VQAv2/VQA_v2_train_merged.json                        # VQAv2数据集
-│   │   └── Visual7W/Visual7W_complex_3plus_parallel.json        # Visual7W数据集
-│   └── playground/                        # 数据存储目录
-│       └── data/                         # 各种中间和最终数据
-│           └── cot/                      # 图像数据按数据集分类
-│              ├── docvqa/ffbf0023_4.png...              # DocVQA图像
-│              ├── gqa/1.jpg...                            # GQA图像
-│              ├── textvqa/0a0bc91825468c45.jpg             # TextVQA图像
-│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO图像(VQAv2)
-│              ├── v7w/v7w_1.jpg...                 # Visual7W图像
-│              └── infographicsvqa/10002.jpeg...    # InfoVQA图像
+├── 📖 Documentation & Configuration
+│   ├── README.md                          
+│   ├── requirements.txt                   # Pip dependency list
+│   ├── current_requirements.txt           # Current environment complete package list
+│   ├── environment.yml                    # Conda environment configuration
+│   ├── Dockerfile                         # Docker image configuration
+│   └── docker-compose.yml                # Docker orchestration configuration
+
+├── 🤖 Model Files
+│   └── Qwen2-VL-7B-Instruct/             # Qwen2-VL model files
+
+├── 📊 Datasets
+│   ├── dataset_with_GT/                   # Original datasets (with Ground Truth)
+│   │   ├── Docvqa/DocVQA_complex_4plus.json                       # DocVQA dataset
+│   │   ├── GQA/GQA_merged_complex_6plus.json                      # GQA dataset
+│   │   ├── InfoVQA/InfoVQA_complex_4plus_parallel.json            # InfoVQA dataset
+│   │   ├── TextVQA/TextVQA_complex_3plus_parallel.json           # TextVQA dataset
+│   │   ├── VQAv2/VQA_v2_train_merged.json                        # VQAv2 dataset
+│   │   └── Visual7W/Visual7W_complex_3plus_parallel.json        # Visual7W dataset
+│   └── playground/                        # Data storage directory
+│       └── data/                         # Various intermediate and final data
+│           └── cot/                      # Image data categorized by dataset
+│              ├── docvqa/ffbf0023_4.png...              # DocVQA images
+│              ├── gqa/1.jpg...                            # GQA images
+│              ├── textvqa/0a0bc91825468c45.jpg...             # TextVQA images
+│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO images (VQAv2)
+│              ├── v7w/v7w_1.jpg...                 # Visual7W images
+│              └── infographicsvqa/10002.jpeg...    # InfoVQA images
 │          
-├── 📦 生成结果
-│   ├── images_bbox/                       # 生成的bbox数据
+├── 📦 Generated Results
+│   ├── images_bbox/                       # Generated bbox data
 │   │   ├── DocVQA_complex_one_agent.json
 │   │   ├── GQA_complex_one_agent.json
 │   │   ├── InfoVQA_complex_one_agent.json
 │   │   ├── TextVQA_complex_one_agent.json
 │   │   ├── VQAv2_complex_one_agent.json
 │   │   └── Visual7W_complex_one_agent.json
-│   └── reasoning_chains/                  # 生成的推理链数据
+│   └── reasoning_chains/                  # Generated reasoning chain data
 │       ├── DocVQA_complex_reasoning_chains_one_agent.json
 │       ├── GQA_complex_reasoning_chains_one_agent.json
 │       ├── InfoVQA_complex_reasoning_chains_one_agent.json
 │       ├── TextVQA_complex_reasoning_chains_one_agent.json
 │       ├── VQAv2_complex_reasoning_chains_one_agent.json
-│       └── Visual7W_complex_reasoning_chains_one_agent.json
-└── 🗂️ 其他文件
-    ├── __pycache__/                       # Python缓存文件
-    └── *.log                              # 运行日志文件
+└──     └── Visual7W_complex_reasoning_chains_one_agent.json    
 ```
 
-## 📋 文件功能说明
 
-### 🔧 核心脚本
-- **`generate_bbox_one_agent_qwen.py`**: 使用Qwen2-VL生成边界框数据，支持4层生成策略
-- **`generate_relation_cycle.py`**: 基于bbox数据构建推理链，支持单步和多步推理
 
-### 📖 配置文件
-- **`requirements.txt`**: 精心整理的pip依赖包列表，包含版本固定
-- **`environment.yml`**: conda环境配置文件，支持一键创建环境
-- **`Dockerfile`**: Docker镜像配置，支持容器化部署
-- **`docker-compose.yml`**: Docker编排配置，简化容器使用
+## Data selection
 
-### 📊 数据目录
-- **`dataset_with_GT/`**: 原始数据集，包含问题、答案和图像路径
-- **`playground/data/cot/`**: 图像文件，按数据集分类存储
-- **`images_bbox/`**: 生成的bbox数据，包含边界框坐标和描述
-- **`reasoning_chains/`**: 生成的推理链数据，包含推理步骤和逻辑关系
+We applied two criteria to filter out complex questions (which need more than one bounding box to answer them): (1) questions containing
+multiple keywords (thresholds varying by dataset from >3 to >6 keywords) and (2) answers requiring
+compositional reasoning (containing conjunctions or multiple elements). The data we selected is located at folder`dataset_with_GT`.
 
-## 🔧 环境配置
+| Dataset                                  | Samples | Filter Criteria                      | Multi Region Ratio | Source Files                                                 |
+| ---------------------------------------- | ------- | ------------------------------------ | ------------------ | ------------------------------------------------------------ |
+| GQA [[1]](#hudson2019gqa)                | 9,740   | Keywords > 6                         | 41.4%              | `GQA_val_balanced.json`<br>`GQA_val_all.json`<br>`GQA_train_balanced.json` |
+| DocVQA [[2]](#mathew2021docvqa)          | 10,650  | Keywords > 4 or answers with ",/and" | 18.1%              | `docvqa_train_reordered.jsonl`<br>`docvqa_train_v1.0_reordered.json` |
+| InfoVQA [[3]](#mathew2022infographicvqa) | 14,421  | Keywords > 4 or parallel answers     | 39.1%              | `infographicVQA_train_v1.0.json`<br>`infographicVQA_val_v1.0.json` |
+| TextVQA [[4]](#singh2019towards)         | 8,205   | Keywords > 3 or conjunction answers  | 31.2%              | `TextVQA_train.json`                                         |
+| Visual7W [[5]](#zhu2016visual7w)         | 15,675  | Keywords > 3 or multi-part answers   | 51.5%              | `Visual7W_telling.json`                                      |
+| VQAv2 [[6]](#goyal2017making)            | 16,270  | Keywords > 5 or compound answers     | 54.5%              | `VQA_v2_train.json`                                          |
 
-### 数据图片下载
-下载对应数据集并配置到playground/data/cot的对应路径下
+
+
+## Setup
+
+### Download Image & Model
+
+Firstly, you have to download images and configure them in the paths under `playground/data/cot`
+
 - **COCO**: [images](http://images.cocodataset.org/zips/train2014.zip) (82,783 images)
 - **DocVQA**: [homepage](https://www.docvqa.org/datasets/docvqa) (10,196 images)
 - **TextVQA**: [images](https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip) (25,119 images)
@@ -86,328 +96,75 @@ Generate_Data_Qwen2-VL/
 - **GQA**: [images](https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip) (148,854 images)
 - **InfographicVQA**: [homepage](https://www.docvqa.org/datasets/infographicvqa) (5,485 images)
 
-### 🌟 快速环境配置（推荐）
-
-#### 方法1: 使用conda环境文件（最简单）
-```bash
-# 1. 克隆或下载项目
-git clone <repository-url>
-cd Generate_Data_Qwen2-VL
-
-# 2. 创建conda环境（自动安装所有依赖）
-conda env create -f environment.yml
-
-# 3. 激活环境
-conda activate qwen2vl
-
+```
+playground/                        # Data storage directory
+│       └── data/                         # Various intermediate and final data
+│           └── cot/                      # Image data categorized by dataset
+│              ├── docvqa/ffbf0023_4.png...              # DocVQA images
+│              ├── gqa/1.jpg...                            # GQA images
+│              ├── textvqa/0a0bc91825468c45.jpg...             # TextVQA images
+│              ├── coco/COCO_train2014_000000000009.jpg...       # COCO images (VQAv2)
+│              ├── v7w/v7w_1.jpg...                 # Visual7W images
+│              └── infographicsvqa/10002.jpeg...    # InfoVQA images
+│          
 ```
 
-#### 方法2: 手动创建环境（更灵活）
+Also, qwen2-VL-7B model should be downloaded to path `Qwen2-VL-7B-Instruct` which will be used to generate bounding boxes and chain of thought. 
+
+### Environment Setup
+
+You can easily setup environment by these command, also we provided docker and .yml files.
+
 ```bash
-# 1. 创建基础环境
+# 1. Create base environment
 conda create -n qwen2vl python=3.9 -y
 conda activate qwen2vl
 
-# 2. 安装PyTorch（根据你的CUDA版本选择）
-# CUDA 12.6 (当前环境)
+# 2. Install PyTorch (choose based on your CUDA version)
+# CUDA 12.6 (current environment)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 
 
-# 3. 安装其他依赖
+# 3. Install other dependencies
 pip install -r requirements.txt
-
 ```
 
 
-### 📥 模型下载
 
-#### 🤖 Qwen2-VL-7B-Instruct 模型
+## Generate multiple bounding boxes
 
-**自动下载脚本（推荐）：**
-```bash
-# 从ModelScope下载（国内用户推荐，速度快）
-python download_model.py --source modelscope
-
-# 从HuggingFace下载（国外用户）
-python download_model.py --source huggingface
-
-# 指定下载目录
-python download_model.py --model-dir ./models/Qwen2-VL-7B-Instruct --source modelscope
-```
-
-**手动下载方法：**
-```bash
-# 方法1: ModelScope (国内推荐，约15GB)
-pip install modelscope
-python -c "
-from modelscope import snapshot_download
-snapshot_download('qwen/Qwen2-VL-7B-Instruct',
-                 local_dir='./Qwen2-VL-7B-Instruct',
-                 cache_dir='./cache')
-"
-
-# 方法2: HuggingFace (需要良好的网络)
-git lfs install
-git clone https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct
-
-# 方法3: 使用HuggingFace Hub
-pip install huggingface_hub
-python -c "
-from huggingface_hub import snapshot_download
-snapshot_download('Qwen/Qwen2-VL-7B-Instruct',
-                 local_dir='./Qwen2-VL-7B-Instruct')
-"
-```
-
-**模型文件结构验证：**
-```bash
-# 检查模型文件完整性
-ls -la Qwen2-VL-7B-Instruct/
-# 应该包含以下关键文件：
-# - config.json                    # 模型配置
-# - model-00001-of-00005.safetensors  # 模型权重文件
-# - model-00002-of-00005.safetensors
-# - model-00003-of-00005.safetensors
-# - model-00004-of-00005.safetensors
-# - model-00005-of-00005.safetensors
-# - model.safetensors.index.json   # 权重索引
-# - tokenizer.json                 # 分词器
-# - preprocessor_config.json       # 预处理配置
-# - generation_config.json         # 生成配置
-```
-
-## 🚀 使用方法
-
-
-🎯 开始处理 DocVQA 数据集...
-```
-
-### 🔧 手动执行方式（高级用户）
-
-#### 第一步：生成Bbox数据
-
-**脚本功能：** `generate_bbox_one_agent_qwen.py`
-- 使用Qwen2-VL模型分析图像和问题
-- 生成精确的边界框坐标和描述
-- 支持4层生成策略确保数据质量
-
-```bash
-conda activate qwen2vl
-python generate_bbox_one_agent_qwen.py
-```
-
-**执行流程详解：**
-
-1. **🎯 GPU选择界面**
-   ```
-   🚀 Qwen2-VL Bbox生成器
-   ==================================================
-
-   🎯 检测到 4 个GPU，选择使用方式:
-      GPU 0: NVIDIA GeForce RTX 4090
-         总内存: 24.0GB
-         已使用: 2.1GB
-         可用: 21.9GB
-         📊 使用率: 8.8%
-
-   选择使用方式:
-      0. 使用所有GPU
-      1. 使用两个GPU (推荐，更快)
-      2. 使用单个GPU
-
-   请选择 (0/1/2): 2
-   ```
-
-2. **📊 数据集选择**
-   - DocVQA: 文档问答 (~12K复杂问题)
-   - InfoVQA: 信息图表问答 (~22K复杂问题)
-   - TextVQA: 文本问答 (~13K复杂问题)
-   - Visual7W: 视觉问答 (~18K复杂问题)
-   - GQA: 场景图问答 (~153K复杂问题)
-   - VQAv2: 视觉问答v2 (~35K复杂问题)
-
-3. **🔄 4层Bbox生成策略**
-   - **Layer 1 (最高质量)**: Qwen2-VL识别 + OCR精确定位
-     - 成功率: 60-80%
-     - 精度最高，结合视觉理解和文本定位
-   - **Layer 2 (中等质量)**: 仅Qwen2-VL识别
-     - 成功率: 15-25%
-     - OCR失败时的视觉方案
-   - **Layer 3 (保底方案)**: OCR + 关键词匹配
-     - 成功率: 5-15%
-     - Qwen2-VL失效时的文本匹配
-   - **Layer 4 (最后手段)**: 纯算法保底
-     - 成功率: <5%
-     - 确保每个问题都有输出
-
-#### 第二步：生成推理链数据
-
-**脚本功能：** `generate_relation_cycle.py`
-- 基于bbox数据构建推理链
-- 支持单步和多步推理
-- 自动判断推理类型（顺序/并列）
-
-```bash
-conda activate qwen2vl
-python generate_relation_cycle.py
-```
-
-**推理链生成流程详解：**
-
-1. **🎯 推理模式选择**
-   ```
-   🎯 选择bbox生成模式:
-     1. 仅生成单bbox推理链 (bbox_count == 1)
-        - 适用于简单的直接回答问题
-     2. 仅生成多bbox推理链 (bbox_count > 1)
-        - 适用于复杂的多步推理问题
-     3. 自动模式 (处理所有bbox数量)
-        - 处理所有类型的问题
-
-   请选择模式 (1/2/3): 3
-   ```
-
-2. **🔗 推理链类型**
-   - **单步推理**: 直接回答类问题
-     ```
-     问题: "What is the contact person name?"
-     推理: "P.CARTER" directly answers the question about contact person
-     ```
-
-   - **顺序推理**: 步骤依赖的问题 (A→B→C)
-     ```
-     问题: "What is the process to submit application?"
-     推理链: Step1→Step2→Step3→Final Answer
-     ```
-
-   - **并列推理**: 并行证据的问题 (A→B; A→C)
-     ```
-     问题: "Which country has the highest GDP?"
-     推理链: Country1_GDP; Country2_GDP; Country3_GDP → Comparison
-     ```
-
-3. **🤖 多轮Qwen分析**
-   - 每轮分析选择最相关的bbox
-   - 构建推理关系链条
-   - 自动判断是否需要继续推理
-
-### 📊 结果分析和质量评估
-
-**数据质量分析脚本：**
-```bash
-python analyze_results.py
-```
-
-**分析内容包括：**
-- 📈 **Bbox生成质量分布**
-  - Layer 1 (最佳): 60-80%
-  - Layer 2 (良好): 15-25%
-  - Layer 3 (可用): 5-15%
-  - Layer 4 (保底): <5%
-
-- 🔗 **推理链类型统计**
-  - 单步推理比例
-  - 多步推理比例
-  - 平均推理步数
-  - 推理链完整性
-
-- 📊 **数据集完整性检查**
-  - 处理成功率
-  - 错误类型分布
-  - 数据格式验证
-
-**示例输出：**
-```
-📊 DocVQA数据集分析报告
-================================
-总样本数: 11,995
-处理成功: 11,892 (99.1%)
-
-Bbox生成质量分布:
-├── Layer 1 (混合方案): 8,934 (75.1%) ✅
-├── Layer 2 (纯视觉): 2,156 (18.1%) ✅
-├── Layer 3 (OCR保底): 658 (5.5%) ⚠️
-└── Layer 4 (算法保底): 144 (1.2%) ⚠️
-
-推理链类型分布:
-├── 单步推理: 7,234 (60.8%)
-├── 多步推理: 4,658 (39.2%)
-└── 平均步数: 1.6步
-```
-
-### 💡 数据使用示例
-
-**学习如何使用生成的数据：**
-```bash
-python example_usage.py
-```
-
-### 📁 数据集目录结构
-
-```
-dataset_with_GT/                    # 原始数据集
-├── Docvqa/
-│   └── DocVQA_complex_4plus.json  # 4步以上复杂问题
-├── GQA/
-│   └── GQA_merged_complex_6plus.json  # 6步以上复杂问题
-├── InfoVQA/
-│   └── InfoVQA_complex_4plus_parallel.json
-├── TextVQA/
-│   └── TextVQA_complex_3plus_parallel.json
-├── VQAv2/
-│   └── VQAv2_complex_5plus_parallel.json
-└── Visual7W/
-    └── Visual7W_complex_3plus_parallel.json
-
-playground/data/cot/                # 图像文件
-├── docvqa/          # DocVQA图像 (.png)
-├── gqa/             # GQA图像 (.jpg)
-├── textvqa/         # TextVQA图像 (.jpg)
-├── coco/            # COCO图像 (.jpg) - VQAv2使用
-├── v7w/             # Visual7W图像 (.jpg)
-└── infographicsvqa/ # InfoVQA图像 (.jpeg)
-```
-
-### 📋 数据格式详解
-
-#### 🔍 Bbox数据格式 (images_bbox/)
+Just using `python generate_bbox_one_agent_qwen.py` to generate boxes with details under `images_bbox` folder.  To better match regions of interest we applied ROC to enhance the boxes generation. 
 
 ```json
 {
-  "question_id": "DocVQA_338",                    // 唯一问题ID
+  "question_id": "DocVQA_338",                    // Unique question ID
   "question": "what is the contact person name mentioned in letter?",
-  "image_name": "xnbl0037_1",                    // 图像文件名（不含扩展名）
-  "answers": ["P. Carter", "p. carter"],         // 标准答案列表
+  "image_name": "xnbl0037_1",                    // Image filename (without extension)
+  "answers": ["P. Carter", "p. carter"],         // Standard answer list
   "bbox_analysis": {
-    "relevant_elements": [                       // 相关区域列表
+    "relevant_elements": [                       // Relevant regions list
       {
-        "description": "Contact person name",   // 区域描述
-        "bbox": [0.33, 0.31, 0.41, 0.34],     // 归一化坐标 [x1,y1,x2,y2]
+        "description": "Contact person name",   // Region description
+        "bbox": [0.33, 0.31, 0.41, 0.34],     // Normalized coordinates [x1,y1,x2,y2]
         "selection_reason": "Contains the contact person information",
         "content_relation": "This region shows the name P.CARTER which directly answers the question"
       }
     ],
-    "generation_method": "hybrid_qwen2vl_ocr",   // 生成方法
-    "generation_layer": 1,                       // 生成层级 (1-4)
+    "generation_method": "hybrid_qwen2vl_ocr",   // Generation method
+    "generation_layer": 1,                       // Generation layer (1-4)
     "generation_description": "Generated by hybrid method: Qwen2-VL + OCR precise localization"
   }
 }
 ```
 
+**Layer 1** means that we generate boxes and correct them by ROC successfully.
 
-## 🎯 生成结果详解
+- Example:
 
-### 📦 Bbox生成结果分层
-
-#### Layer 1: 混合方案 (最高质量 60-80%)
-- **方法**: Qwen2-VL视觉理解 + OCR精确定位
-- **优势**: 结合视觉语义理解和文本精确定位
-- **适用**: 包含文本的复杂视觉问题
-- **示例**:
   ```json
   {
     "generation_method": "hybrid_qwen2vl_ocr",
     "generation_layer": 1,
-    "bbox": [0.245, 0.156, 0.387, 0.189],  // 精确的文本边界
+    "bbox": [0.245, 0.156, 0.387, 0.189],  // Precise text boundaries
     "match_info": {
       "ocr_confidence": 0.95,
       "text_match_score": 0.87
@@ -415,25 +172,23 @@ playground/data/cot/                # 图像文件
   }
   ```
 
-#### Layer 2: 纯视觉方案 (中等质量 15-25%)
-- **方法**: 仅使用Qwen2-VL进行区域识别
-- **优势**: 处理OCR无法识别的视觉元素
-- **适用**: 图像、图标、复杂布局
-- **示例**:
+**Layer 2** means that qwen generates valid boxes but can't be matched to ROC region, this condition always happens in general image datasets which even don't have ROC data, likes gqa.  
+
+- Example:
+
   ```json
   {
     "generation_method": "qwen2vl_only",
     "generation_layer": 2,
-    "bbox": [0.1, 0.2, 0.4, 0.6],  // 视觉区域边界
+    "bbox": [0.1, 0.2, 0.4, 0.6],  // Visual region boundaries
     "description": "Chart showing sales data"
   }
   ```
 
-#### Layer 3: OCR保底方案 (可用质量 5-15%)
-- **方法**: OCR文本检测 + 关键词匹配
-- **优势**: Qwen2-VL失效时的文本方案
-- **适用**: 简单文本问题
-- **示例**:
+**Layer 3** is designed to prevent from qwen failed condition. If qwen failed to generate valid box, we will parse question and use OCR to find relevant regions.  
+
+- Example:
+
   ```json
   {
     "generation_method": "emergency_ocr",
@@ -443,18 +198,176 @@ playground/data/cot/                # 图像文件
   }
   ```
 
-#### Layer 4: 算法保底 (保底质量 <5%)
-- **方法**: 基于问题关键词的算法生成
-- **优势**: 确保每个问题都有输出
-- **适用**: 所有其他方法都失败的情况
-- **示例**:
+**Layer 4** is used as a fallback, just generate three fixed boxes to ensure that answer is not empty
+
+- Example:
+
   ```json
   {
     "generation_method": "basic_fallback",
     "generation_layer": 4,
-    "bbox": [0.05, 0.1, 0.3, 0.15],  // 假设位置
+    "bbox": [0.05, 0.1, 0.3, 0.15],  // Assumed position
     "content": "Text containing 'contact'"
   }
   ```
 
+## Generate CoT
 
+After boxes generation, run `python generate_relation_cycle.py` to generate chain of thought with order under `reasoning_chains` folder.  Our method select one box each step and generate reason, till it find enough to answer question. An example is shown as follow: 
+
+![image-20251102211646496](image-20251102211646496.png)
+
+
+
+```json
+{
+    "id": "Visual7W_4499",
+    "image": [
+      "v7w_1593232"
+    ],
+    "question": "Who is in the picture?",
+    "reasoning_chain": {
+      "chain_type": "sequential",
+      "reasoning_steps": [
+        {
+          "step": 1,
+          "bbox_index": 0,
+          "bbox_content": "A woman in a beige sweater cutting pizza",
+          "description": "A woman in a beige sweater cutting pizza",
+          "generated_reasoning": "This contains the main subject of the image, which is the woman cutting pizza.",
+          "role": "picture",
+          "relationship_to_previous": "sequential",
+          "qwen_analysis": "SELECTED_REGION: [ Region 0] \nROLE: picture\nREASONon: This contains the main subject of the image, which is the woman cutting pizza.\nRELrelationship: sequential",
+          "bbox_coordinates": [
+            0.0,
+            0.19,
+            0.51,
+            0.8
+          ]
+        },
+        {
+          "step": 2,
+          "bbox_index": 1,
+          "bbox_content": "A man in a red sweater holding a child",
+          "description": "A man in a red sweater holding a child",
+          "generated_reasoning": "The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza.",
+          "role": "nextstep",
+          "relationship_to_previous": "sequential",
+          "qwen_analysis": "SELECTED_REGION: [ Region 1] \nROLE: nextstep\nREASONon: The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza.\nRELATIONSHIP: sequential",
+          "bbox_coordinates": [
+            0.44,
+            0.17,
+            0.8,
+            0.63
+          ]
+        },
+        {
+          "step": 3,
+          "bbox_index": 3,
+          "bbox_content": "A child in a pink sweater",
+          "description": "A child in a pink sweater",
+          "generated_reasoning": "The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child.",
+          "role": "conclusion",
+          "relationship_to_previous": "sequential",
+          "qwen_analysis": "SELECTED_REGION: [ Region 3] \nROLE: conclusion\nREASONon: The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child.\nRELationship: sequential",
+          "bbox_coordinates": [
+            0.54,
+            0.31,
+            0.73,
+            0.63
+          ]
+        }
+      ],
+      "total_steps": 3,
+      "final_answer": "A woman in a beige sweater cutting pizza, a man in a red sweater holding a child, and a child in a pink sweater.",
+      "keywords_used": {
+        "keywords": [
+          "picture"
+        ],
+        "numbers": [],
+        "quoted_terms": [],
+        "all_terms": [
+          "picture"
+        ]
+      },
+      "multi_round_analysis": true,
+      "question_type": "sequential",
+      "chain_text": "This contains the main subject of the image, which is the woman cutting pizza. -> The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza. -> The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child.",
+      "chain_format": "sequential",
+      "reasoning_chain_description": "Question type: sequential, Chain: This contains the main subject of the image, which is the woman cutting pizza. -> The region with the man in a red sweater holding a child is the next logical step after identifying the woman cutting pizza. -> The child in the pink sweater is the next logical step after identifying the woman cutting pizza and the man holding a child."
+    },
+    "bbox_elements": [
+      {
+        "description": "A woman in a beige sweater cutting pizza",
+        "selection_reason": "The woman is actively engaged in cutting pizza, which is a central activity in the image.",
+        "content_relation": "The woman's action of cutting pizza is the main focus of the image.",
+        "bbox": [
+          0.0,
+          0.19,
+          0.51,
+          0.8
+        ]
+      },
+      {
+        "description": "A man in a red sweater holding a child",
+        "selection_reason": "The man is holding a child, which is a significant detail in the image.",
+        "content_relation": "The man's interaction with the child adds a family dynamic to the scene.",
+        "bbox": [
+          0.44,
+          0.17,
+          0.8,
+          0.63
+        ]
+      },
+      {
+        "description": "A person holding a plate",
+        "selection_reason": "The person is holding a plate, which is relevant to the activity of eating pizza.",
+        "content_relation": "The plate indicates that the pizza is being served and consumed.",
+        "bbox": [
+          0.65,
+          0.54,
+          0.95,
+          0.8
+        ]
+      },
+      {
+        "description": "A child in a pink sweater",
+        "selection_reason": "The child is wearing a pink sweater, which is a notable detail.",
+        "content_relation": "The child's attire adds color and liveliness to the image.",
+        "bbox": [
+          0.54,
+          0.31,
+          0.73,
+          0.63
+        ]
+      }
+    ],
+    "ground_truth_answers": [
+      "A man, a lady, and a child."
+    ],
+    "stats": {
+      "bbox_count": 4,
+      "original_bbox_count": 4,
+      "removed_bbox_count": 0,
+      "data_cleaning_applied": true
+    }
+  },
+```
+
+
+
+
+
+## References
+
+<a id="hudson2019gqa">[1]</a> Hudson, D. A., & Manning, C. D. (2019). GQA: A New Dataset for Real-World Visual Reasoning and Compositional Question Answering.
+
+<a id="mathew2021docvqa">[2]</a> Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for Document Visual Question Answering.
+
+<a id="mathew2022infographicvqa">[3]</a> Mathew, M., et al. (2022). InfographicVQA: A Large-Scale Dataset for Infographic Visual Question Answering.
+
+<a id="singh2019towards">[4]</a> Singh, A., et al. (2019). Towards VQA Models That Can Read.
+
+<a id="zhu2016visual7w">[5]</a> Zhu, Y., et al. (2016). Visual7W: Grounded Question Answering in Images.
+
+<a id="goyal2017making">[6]</a> Goyal, Y., et al. (2017). Making the V in VQA Matter: Elevating the Role of Image Understanding in Visual Question Answering.
