@@ -6,7 +6,7 @@ This is the implementation of our work: "**Watch Wider and Think Deeper: Collabo
 
 In this work we generated **74,691** complex question-answer pairs including multiple bounding boxes and chain of thought, among 6 general datasets. Specifically, we selected some complex questions, cited bounding boxes which may help answering the question, and use an iterative approach to organize them to form a chain of thought for each question. Our dataset achieving an average accuracy improvement of 15.4% on LLaVA-1.5 and 4.0% on Qwen2-VL during inference process. 
 
- ![dataset](dataset.png)
+ ![dataset](https://github.com/deer-echo/CoCoT/blob/main/dataset.png)
 
 
 
