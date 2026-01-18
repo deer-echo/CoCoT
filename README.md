@@ -356,7 +356,14 @@ After boxes generation, run `python generate_relation_cycle.py` to generate chai
 ```
 
 
+## Citing us
 
+@inproceedings{lu2026watch,
+  title={Watch Wider and Think Deeper: Collaborative Cross-modal Chain-of-Thought for Complex Visual Reasoning},
+  author={Lu, Wenting and Zhu, Didi and Shen, Tao and Zhu, Donglin and Ye, Ayong and Wu, Chao},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS) Workshop},
+  year={2026}
+}
 
 
 ## References
